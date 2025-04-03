@@ -8,7 +8,7 @@ import time
 CLOUDCONVERT_API_KEY = st.secrets["cloudconvert"]["api_key"]
 
 def process_template(doc, client_info):
-    """Replaces placeholders with client info in the docx template."""
+    """Replaces placeholders with client info throughout the docx template, including headers/footers."""
     replacements = {
         "<<CLIENT_NAME>>": client_info['name'],
         "<<COMPANY>>": client_info['company'],
@@ -24,16 +24,32 @@ def process_template(doc, client_info):
                 if key in run.text:
                     run.text = run.text.replace(key, val)
 
-    for para in doc.paragraphs:
-        replace_text(para)
+    def process_paragraphs(paragraphs):
+        for para in paragraphs:
+            replace_text(para)
 
-    for table in doc.tables:
-        for row in table.rows:
-            for cell in row.cells:
-                for para in cell.paragraphs:
-                    replace_text(para)
+    def process_tables(tables):
+        for table in tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    process_paragraphs(cell.paragraphs)
+
+    # Replace in body
+    process_paragraphs(doc.paragraphs)
+    process_tables(doc.tables)
+
+    # Replace in headers & footers
+    for section in doc.sections:
+        # Header
+        process_paragraphs(section.header.paragraphs)
+        process_tables(section.header.tables)
+
+        # Footer
+        process_paragraphs(section.footer.paragraphs)
+        process_tables(section.footer.tables)
 
     return doc
+
 
 def convert_docx_to_pdf_cloudconvert(docx_bytes):
     """Uses CloudConvert API to convert DOCX to PDF with formatting preserved."""
@@ -112,7 +128,8 @@ def main():
         "company": company,
         "address1": address1,
         "address2": address2,
-        "date": date.strftime("%Y-%m-%d")
+        "date": date.strftime("%B %d, %Y")
+
     }
 
     st.header("2. Upload DOCX Template")
