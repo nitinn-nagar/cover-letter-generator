@@ -138,7 +138,7 @@ def main():
     output_format = st.radio("3. Choose output format:", ["DOCX", "PDF"], horizontal=True)
 
     st.markdown("#### 📌 Placeholder Tags in Your Template")
-    st.code("<<CLIENT_NAME>>, <<COMPANY>>, <<ADDRESS>>, <<ADDRESS_LINE_1>>, <<ADDRESS_LINE_2>>, <<DATE>>")
+    st.code("<<CLIENT_NAME>>, <<COMPANY>>, <<ADDRESS>>, <<DATE>> \n Please place the placeholders in respective places in the word template. \n Align <<COMPANY>> and <<ADDRESS>> to the left. ")
 
     if st.button(f"🚀 Generate {output_format}"):
         if not all([name, company, address1, template_file]):
